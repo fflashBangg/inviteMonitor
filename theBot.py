@@ -34,6 +34,43 @@ class MyClient(discord.Client):
         print (inviteList)
         invite = ""
         print('Gathering Invites Completed')
+
+     async def on_invite_create(self, newInvite):
+        global firstRun 
+        global inviteList
+        global inviteListNew
+        channel = self.get_channel(channelID)   
+        if firstRun == 1:
+            print("Cache First Run Update Check: It is NOT the First Run")
+            inviteListNew = []
+            
+            theguild = requests.get('https://discordapp.com/api/v6/guilds/' + guildID + '/invites', headers=headers)
+            guildResponse = theguild.content
+            guildOutput = json.loads(guildResponse)
+            
+            for invite in guildOutput:
+                invitee = invite['inviter']['username']
+                invCount = invite['uses']
+                
+                inviteListNew.append((invite['code'], invitee, invCount))
+                
+            await channel.send("```New invite created:\nCreated by: " + str(newInvite.inviter) + "\nInvite code: " + str(newInvite.code + "```"))                
+            print("Updated Invite Code Cache")
+        else:
+            print("Cache First Run Check: It IS the First Run")
+            inviteList = []
+            theguild = requests.get('https://discordapp.com/api/v6/guilds/' + guildID + '/invites', headers=headers)
+            guildResponse = theguild.content
+            guildOutput = json.loads(guildResponse)
+            
+            for invite in guildOutput:
+                invitee = invite['inviter']['username']
+                invCount = invite['uses']
+                
+                inviteList.append((invite['code'], invitee, invCount))
+                
+            await channel.send("```New invite created:\nCreated by: " + str(newInvite.inviter) + "\nInvite code: " + str(newInvite.code + "```"))
+            print("Updated Invite Code Cache")  
         
     async def on_member_join(self, member):
             print("A new member has joined: " + str(member.name))
